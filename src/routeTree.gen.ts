@@ -8,29 +8,17 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { createFileRoute } from '@tanstack/react-router'
-
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as CounterImport } from './routes/counter'
 import { Route as AboutImport } from './routes/about'
+import { Route as ClientsRouteImport } from './routes/clients.route'
 import { Route as IndexImport } from './routes/index'
-import { Route as ClientsIndexImport } from './routes/clients/index'
-import { Route as ClientsLayoutImport } from './routes/clients/_layout'
-import { Route as ClientsClientIdImport } from './routes/clients/$clientId'
-
-// Create Virtual Routes
-
-const ClientsImport = createFileRoute('/clients')()
+import { Route as ClientsIndexImport } from './routes/clients.index'
+import { Route as ClientsClientIdImport } from './routes/clients.$clientId'
 
 // Create/Update Routes
-
-const ClientsRoute = ClientsImport.update({
-  id: '/clients',
-  path: '/clients',
-  getParentRoute: () => rootRoute,
-} as any)
 
 const CounterRoute = CounterImport.update({
   id: '/counter',
@@ -44,6 +32,12 @@ const AboutRoute = AboutImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const ClientsRouteRoute = ClientsRouteImport.update({
+  id: '/clients',
+  path: '/clients',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
@@ -53,18 +47,13 @@ const IndexRoute = IndexImport.update({
 const ClientsIndexRoute = ClientsIndexImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => ClientsRoute,
-} as any)
-
-const ClientsLayoutRoute = ClientsLayoutImport.update({
-  id: '/_layout',
-  getParentRoute: () => ClientsRoute,
+  getParentRoute: () => ClientsRouteRoute,
 } as any)
 
 const ClientsClientIdRoute = ClientsClientIdImport.update({
-  id: '/clients/$clientId',
-  path: '/clients/$clientId',
-  getParentRoute: () => rootRoute,
+  id: '/$clientId',
+  path: '/$clientId',
+  getParentRoute: () => ClientsRouteRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -76,6 +65,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/clients': {
+      id: '/clients'
+      path: '/clients'
+      fullPath: '/clients'
+      preLoaderRoute: typeof ClientsRouteImport
       parentRoute: typeof rootRoute
     }
     '/about': {
@@ -94,56 +90,43 @@ declare module '@tanstack/react-router' {
     }
     '/clients/$clientId': {
       id: '/clients/$clientId'
-      path: '/clients/$clientId'
+      path: '/$clientId'
       fullPath: '/clients/$clientId'
       preLoaderRoute: typeof ClientsClientIdImport
-      parentRoute: typeof rootRoute
-    }
-    '/clients': {
-      id: '/clients'
-      path: '/clients'
-      fullPath: '/clients'
-      preLoaderRoute: typeof ClientsImport
-      parentRoute: typeof rootRoute
-    }
-    '/clients/_layout': {
-      id: '/clients/_layout'
-      path: '/clients'
-      fullPath: '/clients'
-      preLoaderRoute: typeof ClientsLayoutImport
-      parentRoute: typeof ClientsRoute
+      parentRoute: typeof ClientsRouteImport
     }
     '/clients/': {
       id: '/clients/'
       path: '/'
       fullPath: '/clients/'
       preLoaderRoute: typeof ClientsIndexImport
-      parentRoute: typeof ClientsImport
+      parentRoute: typeof ClientsRouteImport
     }
   }
 }
 
 // Create and export the route tree
 
-interface ClientsRouteChildren {
-  ClientsLayoutRoute: typeof ClientsLayoutRoute
+interface ClientsRouteRouteChildren {
+  ClientsClientIdRoute: typeof ClientsClientIdRoute
   ClientsIndexRoute: typeof ClientsIndexRoute
 }
 
-const ClientsRouteChildren: ClientsRouteChildren = {
-  ClientsLayoutRoute: ClientsLayoutRoute,
+const ClientsRouteRouteChildren: ClientsRouteRouteChildren = {
+  ClientsClientIdRoute: ClientsClientIdRoute,
   ClientsIndexRoute: ClientsIndexRoute,
 }
 
-const ClientsRouteWithChildren =
-  ClientsRoute._addFileChildren(ClientsRouteChildren)
+const ClientsRouteRouteWithChildren = ClientsRouteRoute._addFileChildren(
+  ClientsRouteRouteChildren,
+)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/clients': typeof ClientsRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/counter': typeof CounterRoute
   '/clients/$clientId': typeof ClientsClientIdRoute
-  '/clients': typeof ClientsLayoutRoute
   '/clients/': typeof ClientsIndexRoute
 }
 
@@ -158,11 +141,10 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/clients': typeof ClientsRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/counter': typeof CounterRoute
   '/clients/$clientId': typeof ClientsClientIdRoute
-  '/clients': typeof ClientsRouteWithChildren
-  '/clients/_layout': typeof ClientsLayoutRoute
   '/clients/': typeof ClientsIndexRoute
 }
 
@@ -170,39 +152,36 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/clients'
     | '/about'
     | '/counter'
     | '/clients/$clientId'
-    | '/clients'
     | '/clients/'
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/about' | '/counter' | '/clients/$clientId' | '/clients'
   id:
     | '__root__'
     | '/'
+    | '/clients'
     | '/about'
     | '/counter'
     | '/clients/$clientId'
-    | '/clients'
-    | '/clients/_layout'
     | '/clients/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ClientsRouteRoute: typeof ClientsRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   CounterRoute: typeof CounterRoute
-  ClientsClientIdRoute: typeof ClientsClientIdRoute
-  ClientsRoute: typeof ClientsRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ClientsRouteRoute: ClientsRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   CounterRoute: CounterRoute,
-  ClientsClientIdRoute: ClientsClientIdRoute,
-  ClientsRoute: ClientsRouteWithChildren,
 }
 
 export const routeTree = rootRoute
@@ -216,14 +195,20 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/clients",
         "/about",
-        "/counter",
-        "/clients/$clientId",
-        "/clients"
+        "/counter"
       ]
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/clients": {
+      "filePath": "clients.route.tsx",
+      "children": [
+        "/clients/$clientId",
+        "/clients/"
+      ]
     },
     "/about": {
       "filePath": "about.tsx"
@@ -232,21 +217,11 @@ export const routeTree = rootRoute
       "filePath": "counter.tsx"
     },
     "/clients/$clientId": {
-      "filePath": "clients/$clientId.tsx"
-    },
-    "/clients": {
-      "filePath": "clients",
-      "children": [
-        "/clients/_layout",
-        "/clients/"
-      ]
-    },
-    "/clients/_layout": {
-      "filePath": "clients/_layout.tsx",
+      "filePath": "clients.$clientId.tsx",
       "parent": "/clients"
     },
     "/clients/": {
-      "filePath": "clients/index.tsx",
+      "filePath": "clients.index.tsx",
       "parent": "/clients"
     }
   }
